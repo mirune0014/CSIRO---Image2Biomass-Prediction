@@ -227,19 +227,34 @@ def main() -> None:
     X_test = test[features_num + features_cat].copy()
     # Align to sample order by sample_id if present
     if "sample_id" in test.columns and "sample_id" in sample.columns:
-        test_idx = test.set_index("sample_id").reindex(sample["sample_id"]).reset_index()
-        X_test = test_idx[features_num + features_cat]
+        test_idxed = test.set_index("sample_id").reindex(sample["sample_id"]).reset_index()
+        X_test = test_idxed[features_num + features_cat]
 
     pred = pipe.predict(X_test)
     # Clip to non-negative (biomass cannot be negative). Prevents potential Kaggle validation errors.
     pred = np.clip(pred.astype(float), 0.0, None)
 
-    # Ensure target column name matches sample
-    sub = sample.copy()
-    target_col = "target" if "target" in sub.columns else sub.columns[-1]
-    sub[target_col] = pred.astype(float)
-    _validate_submission(sub)
-    sub.to_csv(OUTPUT_SUB, index=False)
+    # Build prediction_df to mirror exp001.ipynb pattern (merge on image_path)
+    prediction_df = pd.DataFrame({
+        "image_path": (test_idxed if ("sample_id" in test.columns and "sample_id" in sample.columns) else test)["image_path"],
+        "target": pred.astype(float),
+    })
+
+    # Prefer test-based merge when test.csv exists; otherwise fall back to sample alignment
+    if os.path.exists(PATH_TEST_CSV) and "sample_id" in test.columns:
+        test_for_sub = (test_idxed if 'test_idxed' in locals() else test).merge(
+            prediction_df, on="image_path", how="left"
+        )
+        submission = test_for_sub[["sample_id", "target"]].copy()
+    else:
+        # Fall back: align with sample_submission order
+        sub = sample.copy()
+        target_col = "target" if "target" in sub.columns else sub.columns[-1]
+        sub[target_col] = pred.astype(float)
+        submission = sub.rename(columns={target_col: "target"})[["sample_id", "target"]]
+
+    _validate_submission(submission)
+    submission.to_csv(OUTPUT_SUB, index=False)
     print(f"Saved submission to {OUTPUT_SUB}")
 
 
