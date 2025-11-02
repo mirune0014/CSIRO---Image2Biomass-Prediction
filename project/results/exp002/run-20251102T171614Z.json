@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "experiment_id": "exp002",
+    "hypothesis_id": "H-01",
+    "change_type": "model",
+    "hypothesis": "Tabular baseline (date parts + NDVI + height + one-hot categoricals) with Ridge will yield reasonable RMSE.",
+    "expected_effect": "Establish reproducible baseline and metrics (CV≈HO).",
+    "metrics": [
+      "rmse_cv",
+      "mae_cv",
+      "rmse_holdout",
+      "mae_holdout"
+    ],
+    "started_at": "2025-11-02T17:16:14Z",
+    "git_commit": "132a5146c0d9f3ad9c02c44600772b78b5cb0f13",
+    "git_branch": "main"
+  },
+  "params": {
+    "model": "Ridge",
+    "alpha": 1.0,
+    "cv_folds": 5,
+    "holdout_ratio": 0.2,
+    "random_state": 42
+  },
+  "metrics": {
+    "rmse_cv": 21.54969781669837,
+    "mae_cv": 15.058239588780648,
+    "rmse_holdout": 20.64359497910379,
+    "mae_holdout": 14.591466879891192
+  },
+  "notes": [
+    "{\"features_num\": [\"day_of_year\", \"year\", \"month\"], \"features_cat\": [\"target_name\"], \"submission\": \"project\\\\results\\\\exp002\\\\submission.csv\"}"
+  ],
+  "finished_at": "2025-11-02T17:16:14Z"
+}
