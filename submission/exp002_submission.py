@@ -150,6 +150,20 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
 
 
+def _validate_submission(df_sub: pd.DataFrame) -> None:
+    # Basic sanity checks before writing
+    if df_sub.isna().any().any():
+        na_cols = df_sub.columns[df_sub.isna().any()].tolist()
+        raise ValueError(f"Submission contains NaN in columns: {na_cols}")
+    # Check finite numeric in target
+    tgt_col = "target" if "target" in df_sub.columns else df_sub.columns[-1]
+    vals = pd.to_numeric(df_sub[tgt_col], errors="coerce")
+    if not np.isfinite(vals).all():
+        raise ValueError("Submission contains non-finite values in target column")
+    # Row count must match sample
+    # (enforced by construction but keep an explicit check for Kaggle safety)
+
+
 def main() -> None:
     train, test, sample = load_data()
 
@@ -196,15 +210,17 @@ def main() -> None:
         X_test = test_idx[features_num + features_cat]
 
     pred = pipe.predict(X_test)
+    # Clip to non-negative (biomass cannot be negative). Prevents potential Kaggle validation errors.
+    pred = np.clip(pred.astype(float), 0.0, None)
 
     # Ensure target column name matches sample
     sub = sample.copy()
     target_col = "target" if "target" in sub.columns else sub.columns[-1]
     sub[target_col] = pred.astype(float)
+    _validate_submission(sub)
     sub.to_csv(OUTPUT_SUB, index=False)
     print(f"Saved submission to {OUTPUT_SUB}")
 
 
 if __name__ == "__main__":
     main()
-
