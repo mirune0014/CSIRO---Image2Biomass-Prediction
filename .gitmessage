@@ -1,0 +1,17 @@
+# Commit Message Template (日本語/English)
+
+# <type>(exp-<ID>|chore|docs|refactor|fix): <short summary>
+# hypothesis: <H-番号 or N/A>
+# change: <preprocessing|feature|model|hyperparam|infra>
+# metrics: <name>=<value> [cv|holdout|lb], ...
+# rationale: <why this change>
+# notes: <optional extra context>
+
+# 例:
+# feat(exp-002): add NDVI feature to pipeline
+# hypothesis: H-05
+# change: feature
+# metrics: AUC=0.829 cv, AUC=0.821 holdout
+# rationale: NDVI correlates with target; expecting better separability.
+# notes: 5-fold stratified CV, seed=42
+
