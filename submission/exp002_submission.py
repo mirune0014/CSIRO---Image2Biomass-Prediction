@@ -48,10 +48,31 @@ except Exception:
     SKLEARN_AVAILABLE = False
 
 
+def _parse_sample_to_test(sample: pd.DataFrame) -> pd.DataFrame:
+    """Build a minimal test DataFrame from sample_submission when test.csv is absent.
+
+    Expects `sample_id` like "IDxxxxx__<target_name>".
+    Creates columns: sample_id, image_path, target_name.
+    """
+    sid = sample["sample_id"].astype(str)
+    image_id = sid.str.split("__").str[0]
+    target_name = sid.str.split("__").str[1]
+    df = pd.DataFrame({
+        "sample_id": sid,
+        "image_path": image_id.apply(lambda x: os.path.join(PATH_TEST_IMG, f"{x}.jpg")),
+        "target_name": target_name,
+    })
+    return df
+
+
 def load_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     train = pd.read_csv(PATH_TRAIN_CSV)
-    test = pd.read_csv(PATH_TEST_CSV)
     sample = pd.read_csv(PATH_SAMPLE_SUB)
+    # test.csv が無い Kaggle データセットにも対応
+    if os.path.exists(PATH_TEST_CSV):
+        test = pd.read_csv(PATH_TEST_CSV)
+    else:
+        test = _parse_sample_to_test(sample)
 
     # Optional numeric casts if present
     for c in ["Pre_GSHH_NDVI", "Height_Ave_cm", "target"]:

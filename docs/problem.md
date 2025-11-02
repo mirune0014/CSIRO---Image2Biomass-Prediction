@@ -17,11 +17,13 @@
     4) 形式は正しいが、特徴量が貧弱で LB が極端に低い
 
 ### 原因（推定）
-- 本コンペの `test.csv` は画像パスと `target_name` しか含まないため、タブラー特徴（NDVI/高さ/日付など）は使用不可。exp002 はリークを避けるため共通列のみに絞っており、実質 `target_name` の one-hot のみ → 予測がクラス平均に近づき、LB が低くなりやすい。
-- 併せて、前処理の端数・欠損により NaN/負値が出ると、提出が拒否される可能性がある。
+- Kaggle 側データセットには `test.csv` が存在しない（または列が極端に少ない）ため、`submission` スクリプトが `test.csv` 前提で失敗。
+- さらに、本コンペの test 側は `sample_id` から `image_id` と `target_name` が復元可能で、ここから最低限の特徴を作る必要があった。
+- 加えて、前処理の端数・欠損により NaN/負値が出ると、提出が拒否される可能性がある。
 
 ### 対策（実施済み）
-- `submission/exp002_submission.py` に安全対策を追加:
+- `submission/exp002_submission.py` と `kaggle/exp002_baseline_submission.py` を修正:
+  - `test.csv` が無い場合は `sample_submission.csv` の `sample_id` を分解して `test` DataFrame を生成（`image_path`, `target_name`）。
   - 予測値の非負クリップ: `np.clip(pred, 0.0, None)`
   - NaN/非有限値の検知・明示的エラー: `_validate_submission()`
   - `sample_id` による行順アラインの明示化（既存維持）
@@ -45,4 +47,3 @@
   - `!python submission/exp002_submission.py`
 - 出力確認
   - `import pandas as pd; pd.read_csv('/kaggle/working/submission.csv').describe()`
-
