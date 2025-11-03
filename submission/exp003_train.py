@@ -36,7 +36,12 @@ from torch.utils.data import DataLoader, Dataset
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import cv2
-import timm
+try:
+    import timm  # type: ignore
+    _HAS_TIMM = True
+except Exception:
+    timm = None
+    _HAS_TIMM = False
 
 
 # ----------------------------- configuration ---------------------------------
@@ -183,13 +188,31 @@ class BiomassModel(nn.Module):
 
     def __init__(self, model_name: str, pretrained: bool, n_targets: int) -> None:
         super().__init__()
-        # try pretrained=True, fallback to False if unavailable (no internet)
-        try:
-            self.encoder = timm.create_model(model_name, pretrained=pretrained, num_classes=0, global_pool="avg")
-        except Exception:
-            self.encoder = timm.create_model(model_name, pretrained=False, num_classes=0, global_pool="avg")
-
-        feat_dim = getattr(self.encoder, "num_features", 768)
+        # try timm encoder; if unavailable or weights can't be fetched, fallback
+        if _HAS_TIMM:
+            try:
+                self.encoder = timm.create_model(
+                    model_name, pretrained=pretrained, num_classes=0, global_pool="avg"
+                )
+            except Exception:
+                self.encoder = timm.create_model(
+                    model_name, pretrained=False, num_classes=0, global_pool="avg"
+                )
+            feat_dim = getattr(self.encoder, "num_features", 768)
+        else:
+            self.encoder = nn.Sequential(
+                nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3),
+                nn.BatchNorm2d(64),
+                nn.ReLU(inplace=True),
+                nn.MaxPool2d(3, stride=2, padding=1),
+                nn.Conv2d(64, 128, 3, padding=1),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(128, 256, 3, padding=1),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),
+            )
+            feat_dim = 256
         combined = feat_dim * 2
         hidden = max(256, feat_dim // 2)
 
