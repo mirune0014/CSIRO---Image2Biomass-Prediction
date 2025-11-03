@@ -12,3 +12,20 @@ How to use on Kaggle (Notebook or Script):
 Local test:
 - `python submission/exp002_baseline.py --data-dir data`
 
+---
+
+**exp003 Kaggle Training (single-file)**
+
+- Script: `submission/exp003_train.py`
+- Purpose: Train two-stream 3-output model per task.md; saves `best_model_fold{fold}.pth` under `/kaggle/working/exp003` by default.
+- Notes:
+  - Ignores unknown notebook args (fixes `-f kernel.json` error).
+  - Disables Albumentations version check (no internet).
+  - Falls back to a small CNN if `timm` is unavailable.
+
+Run on Kaggle:
+- `python submission/exp003_train.py`
+- Options: `--data-dir /kaggle/input/<dataset> --epochs 3 --train-batch-size 8 --img-size 768 --model-name convnext_tiny`
+
+Local test (requires timm/torch/albumentations/opencv):
+- `python submission/exp003_train.py --data-dir data --epochs 1`
