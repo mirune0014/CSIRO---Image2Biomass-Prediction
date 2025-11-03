@@ -347,7 +347,10 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num-workers", type=int, default=CFG.num_workers)
     p.add_argument("--seed", type=int, default=CFG.seed)
     p.add_argument("--device", type=str, default=CFG.device)
-    return p.parse_args()
+    # In notebook environments (Kaggle/Colab), extra args like `-f` may be passed.
+    # Use parse_known_args to ignore unknowns and avoid SystemExit.
+    args, _ = p.parse_known_args()
+    return args
 
 
 def main() -> None:
@@ -387,4 +390,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
