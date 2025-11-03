@@ -24,20 +24,16 @@ Image2Biomassは、画像・地上計測・公開データセットを用いて�
 - Dry_Total_g: 0.5
 
 最終スコアは以下の式で計算されます：
-
-![スコア式](images/Final Score.png)
+    $$Final Score = \sum_{i=1}^{5} (w_i \times R_i^2)$$
 
 各次元の決定係数 $R^2$ は以下で定義されます：
-
-![R^2式](images/R^2.png)
-
+    $$R^2 = 1 - \frac{SS_{res}}{SS_{tot}}$$
+  
 残差平方和 $SS_{res}$（予測誤差の合計）：
-
-![SS_res式](images/SS_tes.png)
+    $$SS_{res} = \sum_{j} (y_j - \hat{y}_j)^2$$
 
 全平方和 $SS_{tot}$（データの分散）：
-
-![SS_tot式](images/SS_tot.png)
+    $$SS_{tot} = \sum_{j} (y_j - \bar{y})^2$$
 
 - $y_j$：実測値
 - $\hat{y}_j$：予測値
@@ -125,3 +121,13 @@ ID1001187975__Dry_Total_g,0.0
   primaryClass={cs.CV},
   url={https://arxiv.org/abs/2510.22916},
 }
+
+
+はい、承知いたしました。ファイル名と対応するMarkdown（LaTeX）形式の数式は以下の通りです。
+
+
+
+
+
+
+
