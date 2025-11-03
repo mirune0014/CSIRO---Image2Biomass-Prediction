@@ -31,6 +31,9 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+# Avoid Albumentations network version check in offline Kaggle
+os.environ.setdefault("ALBUMENTATIONS_DISABLE_VERSION_CHECK", "1")
+
 from torch.utils.data import DataLoader, Dataset
 
 import albumentations as A
